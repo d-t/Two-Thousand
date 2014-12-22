@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <title>2000</title>
+    <meta name="author" content="Luca Murgia">
+    <meta name="keywords" content="2000, Two Thousand, Music, Future">
+    <meta name="description" content="Two Thousand is a faded idea of the future.">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1><b>Two Thousand</b></h1>
+    <p>Two Thousand is a faded idea of the future. </p>
+    <canvas id="future-pro" width="800" height="400"></canvas>
+    <audio id="player"></audio>
+</body>
+
+<script type="text/javascript">
+
+var SoundCloudAudioSource = function(audioElement) {
+    var player = document.getElementById(audioElement);
+    var self = this;
+    var analyser;
+    var fftNSamples = 1024;
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext); // this is because it's not been standardised accross browsers yet.
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = fftNSamples; // see - there is that 'fft' thing. 
+    var source = audioCtx.createMediaElementSource(player); // this is where we hook up the <audio> element
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    var sampleAudioStream = function() {
+        // This closure is where the magic happens. Because it gets called with setInterval below, it continuously samples the audio data
+        // and updates the streamData and volume properties. This the SoundCouldAudioSource function can be passed to a visualization routine and 
+        // continue to give real-time data on the audio stream.
+        // console.log(self.streamData.length);
+
+        analyser.getByteFrequencyData(self.streamData);
+        // calculate an overall volume value
+        var total = 0;
+        for (var i = 0; i < 20; i++) { // get the volume from the first 80 bins, else it gets too loud with treble
+            total += self.streamData[i];
+        }
+        self.volume = total;
+    };
+    setInterval(sampleAudioStream, 20);
+    // public properties and methods
+    this.volume = 0;
+    this.streamData = new Uint8Array(fftNSamples / 2); // This just means we will have 128 "bins" (always half the analyzer.fftsize value), each containing a number between 0 and 255. 
+    this.playStream = function(streamUrl) {
+        // get the input stream from the audio element
+        player.setAttribute('src', streamUrl);
+        player.play();
+    }
+};
+
+var audioSource = new SoundCloudAudioSource('player');
+var canvasElement = document.getElementById('future-pro');
+// var context = canvasElement.getCSSContext("2d", "future-pro", 800, 600);
+var context = canvasElement.getContext("2d");
+
+var flag = 0;
+var prevStreamData;
+
+var draw = function() {
+    // you can then access all the frequency and volume data
+    // and use it to draw whatever you like on your canvas
+    var audioSum = 0;
+    // Load image from url
+    var audioImage = new Image();
+    var audioImageData;
+    // When image loads...
+    audioImage.onload = function() {
+    	context.drawImage(this, 0, 0);
+        if (this.naturalWidth > 0){
+            var width = this.naturalWidth;
+            var height = this.naturalHeight;
+
+            // Image Data
+            audioImageData = context.getImageData(0,0, width, height);
+            for (y = 0; y < height; y++) { // for each row...
+                var row = y * width * 4;
+                for (x = 0; x < width/2; x++) {  // for each column...
+                    if (x < audioSource.streamData.length){
+                        if (flag == 0){
+                            val = audioSource.streamData[width/2 - x];
+                        }
+                        else{
+                            val = audioSource.streamData[width/2 - x];
+                            // val = Math.abs(prevStreamData[width/2 - x]/2 - audioSource.streamData[width/2 - x]);
+                        }
+                    }
+                    else{
+                        val = 1;
+                    }
+
+                    // Left side
+                    audioImageData.data[row+(x*4)] += val / 4;
+                    audioImageData.data[row+(x*4)+1] += val / 8; 
+                    audioImageData.data[row+(x*4)+2] *= val / 8;
+                    audioImageData.data[row+(x*4)+3] -= val / 4;
+                    // Right side
+                    audioImageData.data[row + (width*4) - (x*4) - 4] += val / 4;
+                    audioImageData.data[row + (width*4) - (x*4) - 3] += val / 8; 
+                    audioImageData.data[row + (width*4) - (x*4) - 2] *= val / 8;
+                    audioImageData.data[row + (width*4) - (x*4) - 1] -= val / 4;
+
+                }
+            }
+
+            if (flag == 0){
+                flag = 1;
+            }
+            prevStreamData = audioSource.streamData;
+
+            // Put pixel data on canvas
+            context.putImageData(audioImageData, 0, 0);
+        }//if
+
+    };
+    audioImage.src = "media/future-pro.png";
+    
+    // Repeat
+    requestAnimationFrame(draw);
+};
+
+mp3FilePath = 'media/elnico-short.mp3';
+audioSource.playStream(mp3FilePath);
+draw();
+var imageDataURL = canvasElement.toDataURL();
+document.body.style.background = "transparent url('"+imageDataURL+"') repeat";
+</script>
