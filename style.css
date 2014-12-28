@@ -1,0 +1,32 @@
+@font-face {
+    font-family: Biko;
+    src: url(fonts/biko/Biko_Regular.otf);
+}
+@font-face {
+    font-family: Biko-Bold;
+    src: url(fonts/biko/Biko_Bold.otf);
+}
+
+body {
+	background-color: #231F20;
+	/*background-image: -WebKit-canvas("future-pro");*/
+
+	text-align: center;
+	color: #FFFFFF;
+	font-family: Biko, Arial;
+	font-size: 150%;
+}
+
+h1 {
+	font-size: 400%;
+	font-family: Biko-Bold;
+}
+
+canvas {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:-1;
+}
