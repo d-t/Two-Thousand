@@ -76,45 +76,27 @@ var draw = function() {
             var width = this.naturalWidth;
             var height = this.naturalHeight;
 
-            // Image Data
-            audioImageData = context.getImageData(0,0, width, height);
-            for (y = 0; y < height; y++) { // for each row...
-                var row = y * width * 4;
-                for (x = 0; x < width/2; x++) {  // for each column...
-                    if (x < audioSource.streamData.length){
-                        if (flag == 0){
-                            val = audioSource.streamData[width/2 - x];
-                        }
-                        else{
-                            val = audioSource.streamData[width/2 - x];
-                            // val = Math.abs(prevStreamData[width/2 - x]/2 - audioSource.streamData[width/2 - x]);
-                        }
-                    }
-                    else{
-                        val = 1;
-                    }
+            // Fill image in width/2
+            var alpha = 0.45;
+            context.fillStyle = 'rgba(' + 255/2 + ', ' + 255/2 + ', ' + 255/8 + ', ' + alpha + ')';
+            context.fillRect(width/2, 0, 1, height);
 
-                    // Left side
-                    audioImageData.data[row+(x*4)] += val / 4;
-                    audioImageData.data[row+(x*4)+1] += val / 8; 
-                    audioImageData.data[row+(x*4)+2] *= val / 8;
-                    audioImageData.data[row+(x*4)+3] -= val / 4;
-                    // Right side
-                    audioImageData.data[row + (width*4) - (x*4) - 4] += val / 4;
-                    audioImageData.data[row + (width*4) - (x*4) - 3] += val / 8; 
-                    audioImageData.data[row + (width*4) - (x*4) - 2] *= val / 8;
-                    audioImageData.data[row + (width*4) - (x*4) - 1] -= val / 4;
-
+            for (x = 0; x < width/2; x++) {  // for each column...
+                if (x < audioSource.streamData.length) {
+                    val = audioSource.streamData[width/2 - x + 1];
                 }
-            }
+                else {
+                    val = 1;
+                }
+                // Draw rectangle
+                red = val / 2;
+                green = val / 2;
+                blue = val / 8;
+                context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + alpha + ')';
+                context.fillRect(x, 0, 1, height);
+                context.fillRect(width-x, 0, 1, height);
 
-            if (flag == 0){
-                flag = 1;
             }
-            prevStreamData = audioSource.streamData;
-
-            // Put pixel data on canvas
-            context.putImageData(audioImageData, 0, 0);
         }//if
 
     };
@@ -124,7 +106,8 @@ var draw = function() {
     requestAnimationFrame(draw);
 };
 
-mp3FilePath = 'media/elnico-short.mp3';
+mp3FilePath = 'media/bge.mp3';
+// mp3FilePath = 'media/elnico-short.mp3';
 audioSource.playStream(mp3FilePath);
 draw();
 </script>

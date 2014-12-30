@@ -8,9 +8,7 @@
     <meta name="description" content="Two Thousand is a faded idea of the future.">
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style-bg.css">
 </head>
-
 
 <body>
     <h1><b>Two Thousand</b></h1>
@@ -73,33 +71,33 @@ var draw = function() {
     var audioImageData;
     // When image loads...
     audioImage.onload = function() {
-        context.drawImage(this, 0, 0);
+    	context.drawImage(this, 0, 0);
         if (this.naturalWidth > 0){
             var width = this.naturalWidth;
             var height = this.naturalHeight;
 
-            // Fill image in width/2
             var alpha = 0.45;
-            context.fillStyle = 'rgba(' + 255/2 + ', ' + 255/2 + ', ' + 255/8 + ', ' + alpha + ')';
-            context.fillRect(width/2, 0, 1, height);
 
             for (x = 0; x < width/2; x++) {  // for each column...
                 if (x < audioSource.streamData.length) {
-                    val = audioSource.streamData[width/2 - x + 1];
+                    val = audioSource.streamData[x];
+                    // val = audioSource.streamData[width/2 - x + 1];
                 }
                 else {
                     val = 1;
                 }
-                // Draw rectangle
+                // Draw circle
                 red = val / 2;
                 green = val / 2;
                 blue = val / 8;
-                context.fillStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + alpha + ')';
-                context.fillRect(x, 0, 1, height);
-                context.fillRect(width-x, 0, 1, height);
 
-            }
+                context.beginPath();
+                context.arc(width/2, height/2, x, 0, 2 * Math.PI, false);
+                context.strokeStyle = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + alpha + ')';
+                context.lineWidth = 1;
+                context.stroke();
 
+            }//for
         }//if
 
     };
